@@ -1,4 +1,4 @@
-# Gooseberry: Common Packages for Go
+# Gooseberry: Common Packages for Go Microservices
 
 [![Build Status](https://travis-ci.org/voicera/gooseberry.svg?branch=master)](https://travis-ci.org/voicera/gooseberry)
 [![Go Report Card](https://goreportcard.com/badge/github.com/voicera/gooseberry)](https://goreportcard.com/report/github.com/voicera/gooseberry)
