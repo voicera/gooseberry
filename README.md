@@ -16,7 +16,7 @@ We'd like to build gooseberry to be like Guava is for Java.
 * Error aggregation (multiple errors into one with a header message)
 * Leveled logger with a prefix and a wrapper for [zap](go.uber.org/zap)
 * Polling with an exponential backoff and a Bernoulli trials for resetting
-* Uniform Resource Name struct that implemnets [RFC8141](https://tools.ietf.org/html/rfc8141)
+* Uniform Resource Name struct that implements [RFC8141](https://tools.ietf.org/html/rfc8141)
 
 ## Quick Start
 To get the latest version: `go get -u github.com/voicera/gooseberry`
