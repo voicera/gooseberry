@@ -3,6 +3,8 @@
 [![Build Status](https://travis-ci.org/voicera/gooseberry.svg?branch=master)](https://travis-ci.org/voicera/gooseberry)
 [![Go Report Card](https://goreportcard.com/badge/github.com/voicera/gooseberry)](https://goreportcard.com/report/github.com/voicera/gooseberry)
 [![GoDoc](https://godoc.org/github.com/voicera/gooseberry?status.svg)](https://godoc.org/github.com/voicera/gooseberry)
+[![Maintainability](https://api.codeclimate.com/v1/badges/98e8195b41246e1c573d/maintainability)](https://codeclimate.com/github/voicera/gooseberry/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/98e8195b41246e1c573d/test_coverage)](https://codeclimate.com/github/voicera/gooseberry/test_coverage)
 
 Gooseberry is a collection of common Go packages that Voicera uses in microservices.
 It's an incomplete library, named after a fruit that looks like an ungrown clementine.
