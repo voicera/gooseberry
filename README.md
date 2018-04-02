@@ -67,9 +67,9 @@ func main() {
 	httpClient := &http.Client{Transport: transport}
 	twilioClient := rest.NewURLEncodedRequestJSONResponseClient(httpClient).
 		WithBaseURL(baseURL + accountSid)
-	makeCall(twilioClient)
-	poll(&receiver{twilioClient})
-	time.Sleep(2 * time.Second)
+	go makeCall(twilioClient)
+	go poll(&receiver{twilioClient})
+	time.Sleep(3 * time.Second)
 	gooseberry.Logger.Sync()
 }
 
@@ -94,6 +94,10 @@ func poll(receiver *receiver) {
 		gooseberry.Logger.Error("error creating a poller", "err", err)
 	}
 	go poller.Start()
+	for batch := range poller.Channel() {
+		calls := batch.([]*call)
+		gooseberry.Logger.Debug("found calls", "callsCount", len(calls))
+	}
 }
 
 func (r *receiver) Receive() (interface{}, bool, error) {
@@ -106,24 +110,19 @@ func (r *receiver) Receive() (interface{}, bool, error) {
 Running the above example produces an output that looks like the following (which was heavily edited for brevity):
 
 ```bash
-{"level":"info","ts":"2018-04-02T00:58:05Z","caller":"runtime/proc.go:198","msg":"starting example"}
-{"level":"debug","ts":"2018-04-02T00:58:05Z","caller":"web/web.go:90","msg":"TWL:Request","request":"POST /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls.json HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nContent-Length: 89\r\nAuthorization: *******STRIPPED OUT*******\r\nContent-Type: application/x-www-form-urlencoded\r\nAccept-Encoding: gzip\r\n\r\nFrom=%2B15005550006&To=%2B14108675310&Url=http%3A%2F%2Fdemo.twilio.com%2Fdocs%2Fvoice.xml"}
-{"level":"debug","ts":"2018-04-02T00:58:06Z","caller":"web/web.go:108","msg":"TWL:Response","response":"HTTP/1.1 401 UNAUTHORIZED
-...
-\"Your AccountSid or AuthToken was incorrect.\", \"message\": \"Authenticate\", \"more_info\": \"https://www.twilio.com/docs/errors/20003\", \"status\": 401}"}
-{"level":"error","ts":"2018-04-02T00:58:06Z","caller":"example/main.go:40","msg":"error making a call","err":"HTTP Status Code 401
-...
-runtime.main\n\t/usr/local/go/src/runtime/proc.go:198"}
-{"level":"debug","ts":"2018-04-02T00:58:06Z","caller":"runtime/asm_amd64.s:2361","msg":"Started","poller":"twilio"}
-{"level":"debug","ts":"2018-04-02T00:58:06Z","caller":"web/web.go:90","msg":"TWL:Request","request":"GET /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nAuthorization: *******STRIPPED OUT*******\r\nContent-Type: application/x-www-form-urlencoded\r\nAccept-Encoding: gzip\r\n\r\n"}
-{"level":"debug","ts":"2018-04-02T00:58:06Z","caller":"web/web.go:108","msg":"TWL:Response","response":"HTTP/1.1 401 UNAUTHORIZED\r\nContent-Length:
-...
-X-Shenanigans: none\r\n\r\n<?xml version='1.0' encoding='UTF-8'?>\n<TwilioResponse><RestException><Code>20003</Code><Detail>Your AccountSid or AuthToken was incorrect.</Detail><Message>Authenticate</Message><MoreInfo>https://www.twilio.com/docs/errors/20003</MoreInfo><Status>401</Status></RestException></TwilioResponse>"}
-...
-{"level":"debug","ts":"2018-04-02T00:58:06Z","caller":"polling/poller.go:98","msg":"Relaxing","poller":"twilio"}
-{"level":"debug","ts":"2018-04-02T00:58:07Z","caller":"web/web.go:90","msg":"TWL:Request","request":"GET /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nAuthorization: *******STRIPPED OUT*******\r\nContent-Type: application/x-www-form-urlencoded\r\nAccept-Encoding: gzip\r\n\r\n"}
-...
-{"level":"debug","ts":"2018-04-02T00:58:07Z","caller":"polling/poller.go:98","msg":"Relaxing","poller":"twilio"}
+{"level":"info","ts":"2018-04-02T20:54:22Z","caller":"runtime/proc.go:198","msg":"starting example"}
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"runtime/asm_amd64.s:2361","msg":"Started","poller":"twilio"}
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"web/web.go:90","msg":"TWL:Request","request":"GET /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nAuthorization: *******STRIPPED OUT*******\r\nContent-Type: application/x-www-fo...
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"web/web.go:90","msg":"TWL:Request","request":"POST /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls.json HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nContent-Length: 89\r\nAuthorization: *******STRIPPED OUT*******\r\nConten...
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"web/web.go:108","msg":"TWL:Response","response":"HTTP/1.1 401 UNAUTHORIZED\r\nContent-Length: 293\r\nAccess-Control-Allow-Credentials: true\r\nAccess-Control-Allow-Headers: Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match,...
+{"level":"error","ts":"2018-04-02T20:54:22Z","caller":"runtime/asm_amd64.s:2361","msg":"HTTP Status Code 401: <?xml version='1.0' encoding='UTF-8'?>\n<TwilioResponse><RestException><Code>20003</Code><Detail>Your AccountSid or AuthToken was incorrect.</Detail><Message>Authenticate</Message><MoreInfo>https://...
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"polling/poller.go:98","msg":"Relaxing","poller":"twilio"}
+{"level":"debug","ts":"2018-04-02T20:54:22Z","caller":"web/web.go:108","msg":"TWL:Response","response":"HTTP/1.1 401 UNAUTHORIZED\r\nContent-Length: 171\r\nAccess-Control-Allow-Credentials: true\r\nAccess-Control-Allow-Headers: Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match,...
+{"level":"error","ts":"2018-04-02T20:54:22Z","caller":"runtime/asm_amd64.s:2361","msg":"error making a call","err":"HTTP Status Code 401: {\"code\": 20003, \"detail\": \"Your AccountSid or AuthToken was incorrect.\", \"message\": \"Authenticate\", \"more_info\": \"https://www.twilio.com/docs/errors/20003\",...
+{"level":"debug","ts":"2018-04-02T20:54:23Z","caller":"web/web.go:90","msg":"TWL:Request","request":"GET /2010-04-01/Accounts/AC072dcbab90350495b2c0fabf9a7817bb/Calls HTTP/1.1\r\nHost: api.twilio.com\r\nUser-Agent: gooseberry\r\nAuthorization: *******STRIPPED OUT*******\r\nContent-Type: application/x-www-fo...
+{"level":"debug","ts":"2018-04-02T20:54:23Z","caller":"web/web.go:108","msg":"TWL:Response","response":"HTTP/1.1 401 UNAUTHORIZED\r\nContent-Length: 293\r\nAccess-Control-Allow-Credentials: true\r\nAccess-Control-Allow-Headers: Accept, Authorization, Content-Type, If-Match, If-Modified-Since, If-None-Match,...
+{"level":"error","ts":"2018-04-02T20:54:23Z","caller":"runtime/asm_amd64.s:2361","msg":"HTTP Status Code 401: <?xml version='1.0' encoding='UTF-8'?>\n<TwilioResponse><RestException><Code>20003</Code><Detail>Your AccountSid or AuthToken was incorrect.</Detail><Message>Authenticate</Message><MoreInfo>https://...
+{"level":"debug","ts":"2018-04-02T20:54:23Z","caller":"polling/poller.go:98","msg":"Relaxing","poller":"twilio"}
 ```
 
 ## Learn More

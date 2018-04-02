@@ -38,9 +38,9 @@ func main() {
 	httpClient := &http.Client{Transport: transport}
 	twilioClient := rest.NewURLEncodedRequestJSONResponseClient(httpClient).
 		WithBaseURL(baseURL + accountSid)
-	makeCall(twilioClient)
-	poll(&receiver{twilioClient})
-	time.Sleep(2 * time.Second)
+	go makeCall(twilioClient)
+	go poll(&receiver{twilioClient})
+	time.Sleep(3 * time.Second)
 	gooseberry.Logger.Sync()
 }
 
@@ -65,6 +65,10 @@ func poll(receiver *receiver) {
 		gooseberry.Logger.Error("error creating a poller", "err", err)
 	}
 	go poller.Start()
+	for batch := range poller.Channel() {
+		calls := batch.([]*call)
+		gooseberry.Logger.Debug("found calls", "callsCount", len(calls))
+	}
 }
 
 func (r *receiver) Receive() (interface{}, bool, error) {
