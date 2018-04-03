@@ -15,24 +15,13 @@ const (
 type urlEncodedRequestCreator struct{}
 
 func (urlEncodedRequestCreator) CreateRequest(method string, url string, body interface{}) (*http.Request, error) {
-	bodyReader, err := getBodyReader(body)
-	if err != nil {
-		return nil, err
-	}
-
-	request, err := http.NewRequest(method, url, bodyReader)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set(contentTypeHeaderKey, urlEncodedContentType)
-	return request, nil
+	return createRequest(method, url, body, newURLEncodedRequestBodyReader, urlEncodedContentType)
 }
 
-func getBodyReader(body interface{}) (io.Reader, error) {
+func newURLEncodedRequestBodyReader(body interface{}) (io.Reader, error) {
 	if body == nil {
 		return strings.NewReader(""), nil
 	}
-
 	parameters, ok := body.(map[string]string)
 	if !ok {
 		return nil, errors.New("body has to be map[string]string")

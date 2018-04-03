@@ -23,6 +23,23 @@ var (
 	urlEncodedRequestCreatorInstance = urlEncodedRequestCreator{}
 )
 
+type bodyEncoder func(body interface{}) (io.Reader, error)
+
+type requestCreator interface {
+	CreateRequest(method string, url string, body interface{}) (*http.Request, error)
+}
+
+type responseDecoder interface {
+	DecodeResponse(body io.ReadCloser, result interface{}) error
+}
+
+type client struct {
+	requestCreator
+	responseDecoder
+	baseURL    string
+	httpClient *http.Client
+}
+
 // NewJSONClient creates a new REST client that uses JSON to encode requests
 // and decode responses.
 func NewJSONClient(httpClient *http.Client) Client {
@@ -156,17 +173,16 @@ func (c *client) resolveURL(path string) string {
 	return c.baseURL + path
 }
 
-type requestCreator interface {
-	CreateRequest(method string, url string, body interface{}) (*http.Request, error)
-}
-
-type responseDecoder interface {
-	DecodeResponse(body io.ReadCloser, result interface{}) error
-}
-
-type client struct {
-	requestCreator
-	responseDecoder
-	baseURL    string
-	httpClient *http.Client
+func createRequest(
+	method string, url string, body interface{}, encode bodyEncoder, contentType string) (*http.Request, error) {
+	bodyReader, err := encode(body)
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequest(method, url, bodyReader)
+	if err != nil {
+		return nil, err
+	}
+	request.Header.Set(contentTypeHeaderKey, contentType)
+	return request, nil
 }

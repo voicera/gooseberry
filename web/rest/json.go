@@ -14,16 +14,7 @@ const (
 type jsonRequestCreator struct{}
 
 func (jsonRequestCreator) CreateRequest(method string, url string, body interface{}) (*http.Request, error) {
-	jsonBody, err := newJSONRequestBodyReader(body)
-	if err != nil {
-		return nil, err
-	}
-	request, err := http.NewRequest(method, url, jsonBody)
-	if err != nil {
-		return nil, err
-	}
-	request.Header.Set(contentTypeHeaderKey, jsonContentType)
-	return request, nil
+	return createRequest(method, url, body, newJSONRequestBodyReader, jsonContentType)
 }
 
 func newJSONRequestBodyReader(body interface{}) (io.Reader, error) {
