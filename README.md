@@ -21,7 +21,7 @@ We'd like to build gooseberry to be like Guava is for Java.
 ## Quick Start
 To get the latest version: `go get -u github.com/voicera/gooseberry`
 
-### Example
+### REST Client and Polling Example
 The example below creates a RESTful Twilio client to make a phone call and poll
 for call history. The client uses a logger for requests and responses, keeps
 polling for calls made using an exponential backoff poller.
@@ -124,6 +124,85 @@ Running the above example produces an output that looks like the following (whic
 {"level":"error","ts":"2018-04-02T20:54:23Z","caller":"runtime/asm_amd64.s:2361","msg":"HTTP Status Code 401: <?xml version='1.0' encoding='UTF-8'?>\n<TwilioResponse><RestException><Code>20003</Code><Detail>Your AccountSid or AuthToken was incorrect.</Detail><Message>Authenticate</Message><MoreInfo>https://...
 {"level":"debug","ts":"2018-04-02T20:54:23Z","caller":"polling/poller.go:98","msg":"Relaxing","poller":"twilio"}
 ```
+
+### URN Example
+The following example uses `scripts/urns/main.go` and the `urn` package
+to autogenerate helper functions for input URN namespace IDs:
+
+```bash
+go run scripts/urns/main.go -m "User=user Email=email" > urns.go
+```
+
+The above command results in the following go file:
+
+```go
+package urns // auto-generated using make - DO NOT EDIT!
+
+import (
+	"strings"
+
+	"github.com/voicera/gooseberry/urn"
+)
+
+// NewEmailURN creates a new URN with the "email"
+// namespace ID.
+func NewEmailURN(namespaceSpecificString string) *urn.URN {
+	return urn.NewURN("email", namespaceSpecificString)
+}
+
+// IsEmailURN determines whether the specified URN uses
+// "email" as its namespace ID.
+func IsEmailURN(u *urn.URN) bool {
+	return strings.EqualFold(u.GetNamespaceID(), "email")
+}
+
+// IsEmailURNWithValue determines whether the specified URN uses
+// "email" as its namespace ID and the specified
+// namespaceSpecificString as its namespace-specific string.
+func IsEmailURNWithValue(u *urn.URN, namespaceSpecificString string) bool {
+	return IsEmailURN(u) && strings.EqualFold(u.GetNamespaceSpecificString(), namespaceSpecificString)
+}
+
+// NewUserURN creates a new URN with the "user"
+// namespace ID.
+func NewUserURN(namespaceSpecificString string) *urn.URN {
+	return urn.NewURN("user", namespaceSpecificString)
+}
+
+// IsUserURN determines whether the specified URN uses
+// "user" as its namespace ID.
+func IsUserURN(u *urn.URN) bool {
+	return strings.EqualFold(u.GetNamespaceID(), "user")
+}
+
+// IsUserURNWithValue determines whether the specified URN uses
+// "user" as its namespace ID and the specified
+// namespaceSpecificString as its namespace-specific string.
+func IsUserURNWithValue(u *urn.URN, namespaceSpecificString string) bool {
+	return IsUserURN(u) && strings.EqualFold(u.GetNamespaceSpecificString(), namespaceSpecificString)
+}
+```
+
+### Inspecting Logging Calls
+Logging using loosely typed key-value pairs context is convenient; for example:
+
+```go
+log.Error("failed to run command", "exitCode", exitCode, "command", command)
+```
+
+However, this way of constructing arguments is susceptible to runtime issues;
+since the logger expects a key to be a string, the following will fail:
+
+```go
+log.Error("failed to run command", exitCode, command)
+```
+
+To prevent such issues, which we've seen happen, run the following script
+to check that log calls are made as expected:
+
+```bash
+go run scripts/inspector/main.go -v -i .
+``` 
 
 ## Learn More
 The following can also be found at <https://godoc.org/github.com/voicera/gooseberry>
