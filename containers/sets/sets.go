@@ -38,16 +38,14 @@ type Set interface {
 	ToStringSlice() []string
 }
 
-type set struct {
-	underlying map[interface{}]struct{}
-}
+type set map[interface{}]struct{}
 
 var present = struct{}{} // 0 bytes
 
 // NewSet creates a new set. The initial capacity does not bound the set's size:
 // sets grow to accommodate the number of elements to store.
 func NewSet(initialCapacity int) Set {
-	return &set{underlying: make(map[interface{}]struct{}, initialCapacity)}
+	return make(set, initialCapacity)
 }
 
 // NewSetFromStrings creates a new set from the specified strings.
@@ -59,34 +57,34 @@ func NewSetFromStrings(strings ...string) Set {
 	return set
 }
 
-func (s *set) Add(element interface{}) {
-	s.underlying[element] = present
+func (s set) Add(element interface{}) {
+	s[element] = present
 }
 
-func (s *set) Contains(element interface{}) bool {
-	_, found := s.underlying[element]
+func (s set) Contains(element interface{}) bool {
+	_, found := s[element]
 	return found
 }
 
-func (s *set) Remove(element interface{}) {
-	delete(s.underlying, element)
+func (s set) Remove(element interface{}) {
+	delete(s, element)
 }
 
-func (s *set) Size() int {
-	return len(s.underlying)
+func (s set) Size() int {
+	return len(s)
 }
 
-func (s *set) ToSlice() []interface{} {
+func (s set) ToSlice() []interface{} {
 	slice := make([]interface{}, 0, s.Size())
-	for element := range s.underlying {
+	for element := range s {
 		slice = append(slice, element)
 	}
 	return slice
 }
 
-func (s *set) ToStringSlice() []string {
+func (s set) ToStringSlice() []string {
 	slice := make([]string, 0, s.Size())
-	for element := range s.underlying {
+	for element := range s {
 		slice = append(slice, element.(string)) // TODO (Geish): check type and call fmt.Sprint if not a string?
 	}
 	return slice
