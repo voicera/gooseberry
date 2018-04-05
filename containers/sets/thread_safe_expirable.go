@@ -6,7 +6,7 @@ import (
 )
 
 type threadSafeExpirableSet struct {
-	sync.RWMutex
+	mutex sync.RWMutex
 	Set
 }
 
@@ -20,37 +20,37 @@ func NewThreadSafeExpirableSet(initialCapacity int, ttl time.Duration) Set {
 }
 
 func (s *threadSafeExpirableSet) Add(element interface{}) {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.Add(element)
 }
 
 func (s *threadSafeExpirableSet) Contains(element interface{}) bool {
-	s.RLock()
-	defer s.RUnlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	return s.Contains(element)
 }
 
 func (s *threadSafeExpirableSet) Remove(element interface{}) {
-	s.Lock()
-	defer s.Unlock()
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
 	s.Remove(element)
 }
 
 func (s *threadSafeExpirableSet) Size() int {
-	s.RLock()
-	defer s.RUnlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	return s.Size()
 }
 
 func (s *threadSafeExpirableSet) ToSlice() []interface{} {
-	s.RLock()
-	defer s.RUnlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	return s.ToSlice()
 }
 
 func (s *threadSafeExpirableSet) ToStringSlice() []string {
-	s.RLock()
-	defer s.RUnlock()
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
 	return s.ToStringSlice()
 }
