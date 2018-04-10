@@ -8,23 +8,20 @@
 
 Gooseberry is a collection of common Go packages that Voicera uses in microservices.
 It's an incomplete library, named after a fruit that looks like an ungrown clementine.
-We'd like to build gooseberry to be like Guava is for Java.
 
 ## Features
-* REST clients, web client with logging, basic auth support, etc.
+* Lightweight REST clients, web client with built-in pluggable debug logging (useful for new projects), basic auth support, etc.
 * Container structs like immutable maps, priority queues, sets, etc.
 * Error aggregation (multiple errors into one with a header message)
-* Leveled logger with a prefix and a wrapper for [zap](go.uber.org/zap)
-* Polling with an exponential backoff and a Bernoulli trials for resetting
-* Uniform Resource Name struct that implements [RFC8141](https://tools.ietf.org/html/rfc8141)
+* Leveled logger with a prefix and a wrapper for zap
+* Polling with an exponential backoff and Bernoulli trials for resetting the backoff
+* Uniform Resource Name struct that implements [RFC8141](https://tools.ietf.org/html/rfc8141) and URN helper functions generator
 
 ## Quick Start
 To get the latest version: `go get -u github.com/voicera/gooseberry`
 
 ### REST Client and Polling Example
-The example below creates a RESTful Twilio client to make a phone call and poll
-for call history. The client uses a logger for requests and responses, keeps
-polling for calls made using an exponential backoff poller.
+The example below creates a RESTful Twilio client to make a phone call and to poll for call history. The client uses a debug logger for requests and responses and keeps polling for calls made using an exponential backoff poller.
 
 ```go
 package main
@@ -107,7 +104,7 @@ func (r *receiver) Receive() (interface{}, bool, error) {
 }
 ```
 
-Running the above example produces an output that looks like the following (which was heavily edited for brevity):
+Running the above example produces output that looks like the following (which was heavily edited for brevity):
 
 ```bash
 {"level":"info","ts":"2018-04-02T20:54:22Z","caller":"runtime/proc.go:198","msg":"starting example"}
@@ -203,6 +200,13 @@ to check that log calls are made as expected:
 ```bash
 go run scripts/inspector/main.go -v -i .
 ``` 
+
+## Motivation
+Common software libraries help us be more productive: saving us from reinventing the wheel; increasing transferrable knowledge across projects; and allowing us to become experts as we build them once and use them often. Moreover, they tend to have fewer bugs as they're better battle-tested and maintained. Using a common collection of libraries is a good thing for teams, companies, and the entire OSS community.
+
+Nowadays, our ability to build complex software systems has significantly increased thanks to the growth of OSS. When we started [Voicera](https://www.voicera.com), we intended to contribute back to the OSS community whenever possible; so when the time came to build our Go microservices, we created common packages that were intentionally designed to be OSS. After a year of using those packages in production, we felt it's time to share them with the Go community. We called the repo Gooseberry: Go is in the name; it's named after a fruit that looks like an ungrown clementine — just like our incomplete library; and it sounds like a fun name to say! With the community's help, we'd like to build gooseberry to be as commonly used as Guava is for Java.
+
+So, nothing earth-shattering here; just a bunch of common code that we think the vast majority of Go developers should reuse in their projects. We welcome your contributions and feedback. Happy coding!
 
 ## Learn More
 The following can also be found at <https://godoc.org/github.com/voicera/gooseberry>
