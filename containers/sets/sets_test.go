@@ -31,6 +31,29 @@ func TestNewSetFromStrings(t *testing.T) {
 	assert.For(t).ThatActual(set.Contains("baz")).IsFalse()
 }
 
+func TestClear(t *testing.T) {
+	set := sets.NewSetFromStrings("foo", "bar")
+	assert.For(t).ThatActual(set.Size()).Equals(2)
+	assert.For(t).ThatActual(set.Contains("foo")).IsTrue()
+	assert.For(t).ThatActual(set.Contains("bar")).IsTrue()
+
+	// Verify clearing the set removes all elements, leaving a functional empty set
+	set.Clear()
+	assert.For(t).ThatActual(set.Size()).Equals(0)
+	assert.For(t).ThatActual(set.Contains("foo")).IsFalse()
+	assert.For(t).ThatActual(set.Contains("bar")).IsFalse()
+
+	// Verify the set is still functional and can be added to
+	set.Add("foo")
+	assert.For(t).ThatActual(set.Size()).Equals(1)
+	assert.For(t).ThatActual(set.Contains("foo")).IsTrue()
+
+	// Verify clearing the set after additional adds
+	set.Clear()
+	assert.For(t).ThatActual(set.Size()).Equals(0)
+	assert.For(t).ThatActual(set.Contains("foo")).IsFalse()
+}
+
 func add(set sets.Set) {
 	set.Add(1)
 }
