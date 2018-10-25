@@ -25,6 +25,12 @@ func (s *threadSafeExpirableSet) Add(element interface{}) {
 	s.Add(element)
 }
 
+func (s *threadSafeExpirableSet) Clear() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.Clear()
+}
+
 func (s *threadSafeExpirableSet) Contains(element interface{}) bool {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()

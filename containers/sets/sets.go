@@ -22,6 +22,9 @@ type Set interface {
 	// Add adds the specified element to the set.
 	Add(element interface{})
 
+	// Clear empties the set of all elements.
+	Clear()
+
 	// Contains checks whether or not the specified element belongs to the set.
 	Contains(element interface{}) bool
 
@@ -38,14 +41,20 @@ type Set interface {
 	ToStringSlice() []string
 }
 
-type set map[interface{}]struct{}
+type set struct {
+	initialCapacity int
+	underlying      map[interface{}]struct{}
+}
 
 var present = struct{}{} // 0 bytes
 
 // NewSet creates a new set. The initial capacity does not bound the set's size:
 // sets grow to accommodate the number of elements to store.
 func NewSet(initialCapacity int) Set {
-	return make(set, initialCapacity)
+	return &set{
+		initialCapacity: initialCapacity,
+		underlying:      make(map[interface{}]struct{}, initialCapacity),
+	}
 }
 
 // NewSetFromStrings creates a new set from the specified strings.
@@ -57,34 +66,38 @@ func NewSetFromStrings(strings ...string) Set {
 	return set
 }
 
-func (s set) Add(element interface{}) {
-	s[element] = present
+func (s *set) Add(element interface{}) {
+	s.underlying[element] = present
 }
 
-func (s set) Contains(element interface{}) bool {
-	_, found := s[element]
+func (s *set) Clear() {
+	s.underlying = make(map[interface{}]struct{}, s.initialCapacity)
+}
+
+func (s *set) Contains(element interface{}) bool {
+	_, found := s.underlying[element]
 	return found
 }
 
-func (s set) Remove(element interface{}) {
-	delete(s, element)
+func (s *set) Remove(element interface{}) {
+	delete(s.underlying, element)
 }
 
-func (s set) Size() int {
-	return len(s)
+func (s *set) Size() int {
+	return len(s.underlying)
 }
 
-func (s set) ToSlice() []interface{} {
+func (s *set) ToSlice() []interface{} {
 	slice := make([]interface{}, 0, s.Size())
-	for element := range s {
+	for element := range s.underlying {
 		slice = append(slice, element)
 	}
 	return slice
 }
 
-func (s set) ToStringSlice() []string {
+func (s *set) ToStringSlice() []string {
 	slice := make([]string, 0, s.Size())
-	for element := range s {
+	for element := range s.underlying {
 		slice = append(slice, element.(string)) // TODO (Geish): check type and call fmt.Sprint if not a string?
 	}
 	return slice

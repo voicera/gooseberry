@@ -5,8 +5,9 @@ import (
 )
 
 type expirableSet struct {
-	underlying map[interface{}]time.Time
-	ttl        time.Duration
+	initialCapacity int
+	underlying      map[interface{}]time.Time
+	ttl             time.Duration
 }
 
 // NewExpirableSet creates a new set. The initial capacity does not bound
@@ -14,11 +15,19 @@ type expirableSet struct {
 // TTL (time to live) specifies the duration after which an element expires.
 // TODO(Geish): shrink the size on expiry
 func NewExpirableSet(initialCapacity int, ttl time.Duration) Set {
-	return &expirableSet{underlying: make(map[interface{}]time.Time, initialCapacity), ttl: ttl}
+	return &expirableSet{
+		initialCapacity: initialCapacity,
+		underlying:      make(map[interface{}]time.Time, initialCapacity),
+		ttl:             ttl,
+	}
 }
 
 func (s *expirableSet) Add(element interface{}) {
 	s.underlying[element] = time.Now().UTC()
+}
+
+func (s *expirableSet) Clear() {
+	s.underlying = make(map[interface{}]time.Time, s.initialCapacity)
 }
 
 func (s *expirableSet) Contains(element interface{}) bool {
