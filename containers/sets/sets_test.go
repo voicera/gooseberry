@@ -2,6 +2,7 @@ package sets_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/voicera/gooseberry/containers/sets"
 	"github.com/voicera/tester/assert"
@@ -32,7 +33,22 @@ func TestNewSetFromStrings(t *testing.T) {
 }
 
 func TestClear(t *testing.T) {
-	set := sets.NewSetFromStrings("foo", "bar")
+	testClear(t, sets.NewSetFromStrings("foo", "bar"))
+
+	set := sets.NewExpirableSet(5, time.Hour)
+	set.Add("foo")
+	set.Add("bar")
+
+	testClear(t, set)
+
+	set = sets.NewThreadSafeExpirableSet(5, time.Hour)
+	set.Add("foo")
+	set.Add("bar")
+
+	testClear(t, set)
+}
+
+func testClear(t *testing.T, set sets.Set) {
 	assert.For(t).ThatActual(set.Size()).Equals(2)
 	assert.For(t).ThatActual(set.Contains("foo")).IsTrue()
 	assert.For(t).ThatActual(set.Contains("bar")).IsTrue()
