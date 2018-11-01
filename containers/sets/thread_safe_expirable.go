@@ -6,9 +6,8 @@ import (
 )
 
 type threadSafeExpirableSet struct {
-	initialCapacity int
-	mutex           sync.RWMutex
-	underlying      Set
+	mutex      sync.RWMutex
+	underlying Set
 }
 
 // NewThreadSafeExpirableSet creates a new thread-safe set using a read-write
@@ -17,10 +16,7 @@ type threadSafeExpirableSet struct {
 // the number of elements to store.
 // TTL (time to live) specifies the duration after which an element expires.
 func NewThreadSafeExpirableSet(initialCapacity int, ttl time.Duration) Set {
-	return &threadSafeExpirableSet{
-		initialCapacity: initialCapacity,
-		underlying:      NewExpirableSet(initialCapacity, ttl),
-	}
+	return &threadSafeExpirableSet{underlying: NewExpirableSet(initialCapacity, ttl)}
 }
 
 func (s *threadSafeExpirableSet) Add(element interface{}) {
