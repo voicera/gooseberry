@@ -7,21 +7,26 @@ import (
 	"sync"
 )
 
-var bufferPool = sync.Pool{
-	New: func() interface{} {
-		return &bytes.Buffer{}
-	},
-}
+var (
+	bufferPool = sync.Pool{New: func() interface{} { return &bytes.Buffer{} }}
+)
 
-// NewAggregateError creates a new aggregate error with the specified header.
-func NewAggregateError(header string, errors ...error) *AggregateError {
-	return &AggregateError{Header: header, Errors: errors}
-}
+// ErrorString is a trivial implementation of error.
+type ErrorString string
 
 // AggregateError represents an aggregate error.
 type AggregateError struct {
 	Header string
 	Errors []error
+}
+
+func (err ErrorString) Error() string {
+	return string(err)
+}
+
+// NewAggregateError creates a new aggregate error with the specified header.
+func NewAggregateError(header string, errors ...error) *AggregateError {
+	return &AggregateError{Header: header, Errors: errors}
 }
 
 func (aggregateError *AggregateError) Error() string {

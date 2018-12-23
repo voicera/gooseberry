@@ -28,3 +28,10 @@ func ExampleAggregateError_headerOnly() {
 	// Output:
 	// why would you use an aggregate error in this case?
 }
+
+func ExampleErrorString_Error() {
+	var err ErrorString = "I'm sorry, Dave. I'm afraid I can't do that."
+	fmt.Println(err.Error())
+	// Output:
+	// I'm sorry, Dave. I'm afraid I can't do that.
+}
